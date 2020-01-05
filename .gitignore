@@ -54,3 +54,7 @@ build-iPhoneSimulator/
 
 # package directories
 node_modules
+
+
+# dont commit env variables
+env.yml
