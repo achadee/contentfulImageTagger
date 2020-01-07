@@ -2,9 +2,8 @@ require_relative '../handler.rb'
 require 'test/unit'
 
 class TestHandler < Test::Unit::TestCase
-    def test_happy_path()
-        response = hello(event: {}, context: {})
-        assert_equal 200, response[:statusCode]
-        assert_match /Serverless/, response[:body]
+    def test_active_endpoint()
+        response = api(event: {}, context: {})
+        assert response[:statusCode] >= 200
     end
 end
