@@ -14,35 +14,35 @@ def parse_error error_code, args={}
 end
 
 # Takes a contentful entry id (Image only), returns the id with metadata on what is displayed in the image
-# 
+#
 def api event:, context:
-  return process("1LqlaYlFsw0AlOEWi8o3Gi", "image")
+  return process(event['queryStringParameters']['entry_id'], event['queryStringParameters']['reference_path'], event['queryStringParameters']['tag_path'])
 end
 
 def process entry_id, content_image_reference, tag_pth=nil, options={}
-	# 
+	#
 	# check if the entry exists
-	# 
+	#
 	entry = contentful_client.entry entry_id
 	return resp(entry, [], parse_error('ENTRY_NOT_FOUND', {entry_id: entry_id, content_image_reference: content_image_reference})) if !entry
 
-	# 
+	#
 	# check if the image is on the model
-	# 
+	#
 	asset = entry.send(content_image_reference)
 	return resp(entry, [], parse_error('INVALID_IMAGE_TYPE', {entry_id: entry_id, content_image_reference: content_image_reference})) if asset.image_url
 
-	# 
+	#
 	# get the s3 object
-	# 
+	#
 	obj = get_s3_obj asset.image_url
 
-	# 
+	#
 	# detect the labels
-	# 
+	#
 	tags = detect_labels obj
 
-	# 
+	#
 	# return a response
 	return resp(entry, tags, nil)
 end
@@ -60,12 +60,12 @@ def detect_labels obj, confidence=70
 	resp = rekognition_client.detect_labels({
 	  image: {
 	    s3_object: {
-	      bucket: obj.bucket, 
-	      name: obj.key, 
-	    }, 
-	  }, 
-	  max_labels: 123, 
-	  min_confidence: confidence, 
+	      bucket: obj.bucket,
+	      name: obj.key,
+	    },
+	  },
+	  max_labels: 123,
+	  min_confidence: confidence,
 	})
 	return resp.to_h[:labels].map(&:name)
 end
